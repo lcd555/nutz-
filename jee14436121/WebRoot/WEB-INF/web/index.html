@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Y登录成功Y</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="../include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="../include/css/themes/icon.css">
+<script type="text/javascript" src="../include/js/jquery.min.js"></script>
+<script type="text/javascript" src="../include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../include/js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor-1.2.2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor_lang/zh-cn.js"></script>
+<link rel="shortcut icon" href="${ctxPath}/include/images/io.ico" type="image/x-icon">
+<% include("dlg.html"){}%>
+<style type="text/css">
+body{
+ background:url(../include/images/k017.jpg);
+  background-size:cover;
+  background-repeat:no-repeat;
+  
+}
+</style >
+
+
+</head>
+
+
+
+
+
+<body>
+<table align="center" id="table1">
+        <tbody>
+        <tr class="top">
+        <td colspan="2"><div style="margin-left: 5%;">温馨提示：请关闭不必要的程序，保障系统运行。如因网络或设备环境问题出现异常，请刷新页面或重新登录。</div></td>
+        <div style="float: right;color:violet"><font>${me.uname!""} ，您好！欢迎登录</font> <a href="#" id="logout">【退出】</a></div>
+        </tr>
+</tbody></table>
+<div class="l-center">
+<div class="l-wrap">
+<!-- 右边显示实训考试消息的区域 -->
+     <div class="f-right f-w280 div-red">
+    <div class="div">
+    <div class="l-news">
+    <div class="nheader">
+    <h3>实训考试信息</h3></div>
+    <div class="nlist">
+    <table width="100%" cellspacing="3" cellpadding="0">  
+    <tbody>
+    <!-- easyui 分页（pagination） -->
+        <tr id="trpp2"><td colspan="3" align="left">                       
+            <div id="pp2" style="background:#efefef;"></div>                       
+        </td></tr>  
+    </tbody></table>
+    </div></div></div>
+</div>
+<!-- 左边显示考试新闻的区域 -->
+      <div class="f-left f-w710">
+            <div class="div">
+            <div class="l-news">
+            <div class="nheader">
+            <table class="winstyle44497" cellspacing="0" cellpadding="0"><tbody>
+            <tr><td nowrap=""><h3>考试新闻：</h3></td></tr></tbody></table>
+            </div>
+            <div>
+            <div>                                                      
+                <table id="newstable" width="100%" class="winstyle122389">                           
+                  <tbody>
+                        <!-- easyui 分页（pagination） -->
+                        <tr id="trpp"><td colspan="3" align="left">                      
+                        <div id="pp" style="background:#efefef;"></div>                      
+                    </td></tr>                      
+                </tbody></table>                      
+            </div>
+            </div></div></div>
+      </div>
+</div>
+</div>
+<script type="text/javascript">
+ 
+    /** 字符串实际长度，中文2，英文1
+     * js截取字符串，中英文都能用 。如果给定的字符串大于指定长度，截取指定长度返回，否者返回源字符串。
+     * @param str：需要截取的字符串
+     * @param len: 需要截取的长度
+     */
+    function cutstr(str, len) {       
+        var str_len = str.replace(/[^\x00-\xff]/g, '__').length; //字符串实际长度，中文2，英文1.双字节全匹配        
+        if (str_len <= len)  return str;//如果给定字符串小于指定长度，则返回源字符串；
+            var str_cut = new String();
+            var str_length = 0;
+        for (var i = 0; str_length < len-3; i++) {
+            a = str.charAt(i);
+            str_length++;
+            if (/[\u4e00-\u9fa5]/.test(a))  str_length++;
+            str_cut = str_cut.concat(a);
+        }
+        str_cut = str_cut.concat("...");//返回截取指定长度的字符串拼上...
+        return str_cut;
+    }
+var pageN=1,pageTotal=100;
+$(function(){
+      $("#logout").click(function() {
+            dlg_h(300, 140, "退出系统？", "您确认要退出系统吗？", dlg_ok1, null, "question");
+      });
+      $.ajax({
+            url:"${ctxPath}/news/getCount",
+            type:"post",
+            success: function(res){
+                  pageTotal=res;                
+                  listNews(1,10);loadPager();               
+            },
+            error:function(res){
+                  parent.dlg_h(300,140,"系统提示","系统错误",null,null,"error");
+            }
+      });  
+});
+function listNews(pageNumber,pageSize){
+$.ajax({
+      url:"${ctxPath}/news/listNews",
+      data:{"page":pageNumber,"rows":pageSize},
+      type:"post",
+      success: function(res){
+            $(".inews").remove();
+            res=JSON.parse(res);
+            if(res.total<=0){
+                  var tr="<tr class='inews' height=\"25\"><td >";
+                        tr+="<div class='t'>暂无相关新闻</div>";
+                  tr+="</td><td width='1%' nowrap=''><span >&nbsp;</span></td></tr>";
+                  $("#trpp").before(tr);
+            }
+            else {
+            pageN=pageNumber;
+            pageTotal=res.total;
+            var rows=res.rows;
+            //listNews(res.rows);
+                  for(var i=0;i<rows.length;){
+                        var row=rows[i];
+                        var tr="<tr class='inews' height=\"25\"><td >";
+                               tr+="<div class='t'><a href='${ctxPath}/news/getNews?id="+row.id+"' target='_blank'>"+cutstr(row.title,19)+"</a></div>";
+                        tr+="</td><td width='1%' nowrap=''><span >"+row.tjdate.substr(0,10)+"&nbsp;</span></td></tr>";
+                        $("#trpp").before(tr);
+                        i++;
+                        if(i%5==0){
+                               tr="<tr class='inews' height='1'><td colspan='2' align='center'>";
+                              tr+="<hr style='border-style:dashed;border-color:#999999;width:99%;height:1px;border-width:1px 0px 0px 0px;visibility:inherit'></td></tr>";
+                               $("#trpp").before(tr);
+                        }
+                  }
+            }
+      },
+      error:function(res){
+            dlg_h(300,140,"系统提示","系统错误",null,null,"error");
+      }
+})
+}
+function loadPager(){
+      $('#pp').pagination({
+          total:pageTotal,
+          pageSize:10,
+          pageNumber:pageN,
+          layout:['list','sep','first','prev','links','next','last'],
+          links:5,
+          displayMsg:'{from}/{to} 共{total}条',
+          onSelectPage:function(pageNumber, pageSize){
+            listNews(pageNumber,pageSize);
+    }
+});
+//$('#pp').pagination('refresh',{    total: pageTotal});// 刷新分页栏信息
+}
+function dlg_ok1() {
+      top.location.href = "${ctxPath}/user/doLogout";
+}
+
+
+
+var pageN2=1,pageTotal2=100;
+$(function(){
+    $.ajax({
+        url:"${ctxPath}/pkao/getCount",
+        type:"post",
+        success: function(res){
+            pageTotal2=res;         
+            listPkao(1,10);loadPager2();            
+        },
+        error:function(res){
+            parent.dlg_h(300,140,"系统提示","系统错误",null,null,"error");
+        }
+    });
+});
+function listPkao(pageNumber,pageSize){
+$.ajax({
+    url:"${ctxPath}/pkao/listMyContest",
+    data:{"page":pageNumber,"rows":pageSize},
+    type:"post",
+    success: function(res){
+        $(".ipkao").remove();
+        res=JSON.parse(res);
+        if(res.total<=0){
+            var tr="<tr class='ipkao' height=\"25\"><td >";
+                tr+="<div class='t'>暂无实训/考试信息</div>";
+                tr+="</td><td width='1%' nowrap=''><span >&nbsp;</span></td></tr>";
+            $("#trpp2").before(tr);
+        }
+        else {
+        pageN2=pageNumber;
+        pageTotal2=res.total;
+        var rows=res.rows;
+        //listNews(res.rows);
+            for(var i=0;i<rows.length;){ 
+                var row=rows[i];
+                var dt=(row.starttime.substr(5,5)+"~"+row.endtime.substr(5,5)).replace(/-/g,'.');
+                var tr="<tr class='ipkao' height=\"25\"><td >";
+                    tr+="<div class='t'><a href='${ctxPath}/pkao/getPkao?id="+row.id+"' target='_blank'>"+cutstr(row.title,29)+"</a></div>";
+                    tr+="</td><td width='1%' nowrap=''><span >"+dt+"</span></td></tr>";
+                $("#trpp2").before(tr);
+                i++;
+                if(i%5==0){
+                    tr="<tr class='ipkao' height='1'><td colspan='2' align='center'>";
+                    tr+="<hr style='border-style:dashed;border-color:#999999;width:99%;height:1px;border-width:1px 0px 0px 0px;visibility:inherit'></td></tr>";
+                    $("#trpp2").before(tr);
+                }
+            }
+        }
+    },
+    error:function(res){
+        dlg_h(300,140,"系统提示","系统错误",null,null,"error");
+    }
+})
+}
+function loadPager2(){
+    $('#pp2').pagination({
+        total:pageTotal2,
+        pageSize:10,
+        pageNumber:pageN2,
+        layout:['first','prev','next','last'],
+        //links:5,
+        displayMsg:'{from}/{to} 共{total}条',
+        onSelectPage:function(pageNumber, pageSize){
+            listPkao(pageNumber,pageSize);
+        }
+    });
+}
+</script>
+</body>
+</html>

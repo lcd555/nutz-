@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>userlist.html</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+    <link rel="stylesheet" type="text/css" href="../include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="../include/css/themes/icon.css">
+<script type="text/javascript" src="../include/js/jquery.min.js"></script>
+<script type="text/javascript" src="../include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../include/js/easyui-lang-zh_CN.js"></script>
+
+  </head>
+  
+  <body>
+    <table id="dg" cellpadding="2" ></table>
+<div id="tb" style="padding:5px;">
+      <input id="s_name" class="easyui-textbox"  data-options="prompt:'考号或姓名...'" style="width:200;height:32">
+      <a id="s_user" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+      <a id="a_user" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'">添加</a>
+</div>
+<script type="text/javascript">
+var s_name="",uid="";
+function loadGrid(){
+      s_name=$("#s_name").val();
+      $("#dg").datagrid({
+            width:800,height:500,nowrap:false,
+            striped:true,border:true,collapsible:false,
+            url:"${ctxPath}/user/listUser",                    
+        queryParams:{"s_name":s_name},
+            pagination:true,
+            rownumbers:true,
+            fitColumns:true,pageSize:20,
+            loadMsg:'数据加载中...' ,
+            columns:[[
+                        {title:'学院', field:'dpt',width:100},
+                        {title:'考号', field:'uid',width:80},
+                        {title:'姓名', field:'uname',width:80},
+                    {title:'操作', field:'role',width:100, formatter: function(value,row,index){
+                          var p="<a href=\"javascript:editUser('"+row.uid+"')\">修改</a>";
+                          if(${me.uid}==row.uid)p+="";
+                          else p+="    |   <a href=\"javascript:delUser('"+row.uid+"')\">删除</a>";
+                          return p;
+                    }},
+                ]],
+              rowStyler:function(index, row){
+                 if(${me.uid}==row.uid){ return 'background-color:#FFA042; font-weight:bold';}
+              },
+              toolbar:'#tb'
+      });
+}
+function editUser(uid){
+      parent.$("#mainframe").attr("src","${ctxPath}/user/goEdit?uid="+uid);
+      var tab=parent.$("#tabs").tabs("getSelected");
+      parent.$("#tabs").tabs("update",{tab:tab,options:{title:"修改考生信息"}});
+}
+function delUser(ph){
+      uid=ph;
+      parent.dlg_h(300,140,"确认删除？","您确认要删除："+ph+"吗？",dlg_ok,null,"question");
+}
+function dlg_ok(){
+      $.ajax({
+            url:"${ctxPath}/user/doDel1?uid="+uid,
+            type:"post",
+            success: function(res){
+                  if(res=="true"){
+                        parent.dlg_h(300,140,"删除成功","您已删除考生："+uid,null,null,"info");
+                        uid="";s_name="";
+                        loadGrid();
+                  }else {
+                        parent.dlg_h(300,140,"删除失败",res,null,null,"error");
+                  }
+                  return false;
+            },
+            error:function(res){
+                  parent.dlg_h(300,140,"系统提示","系统错误",null,null,"error");
+            }
+      })
+}
+$(function(){
+      loadGrid();
+      $("#s_user").click(function(){
+            s_name=$("#s_name").val();
+            loadGrid();
+      });
+      $("#a_user").click(function(){
+            parent.$("#mainframe").attr("src","${ctxPath}/user/goAdd");
+            var tab=parent.$("#tabs").tabs("getSelected");
+            parent.$("#tabs").tabs("update",{tab:tab,options:{title:"添加考生信息"}});
+      });
+      $("#tb").bind("keydown",function(e){           
+            var theEvent = e || window.event; // 兼容FF和IE和Opera  
+            var code = theEvent.keyCode || theEvent.which || theEvent.charCode;   
+            if (code == 13) {//回车执行查询
+                  $("#s_user").click();
+              }   
+      });
+})
+</script>
+  </body>
+</html>

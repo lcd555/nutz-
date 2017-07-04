@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="shortcut icon" href="${ctxPath}/include/images/io.ico" type="image/x-icon">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/icon.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor-1.2.2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor_lang/zh-cn.js"></script>
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/mobile.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/color.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.mobile.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/store+json2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/timer.js"></script>
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/paper.css">
+</head>
+<body>
+<table id="dg" cellpadding="2" ></table>
+<div id="tb" style="padding:5px;">
+      <input id="pkao" name="pkao" value="选择考试项目"  style="width:200px;height:32px">
+      <input id="bjs" name="bjs" value="选择参考的部门"  style="width:200px;height:32px">
+      <a id="o_score" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-excel'">导出</a>
+</div>
+<script>
+
+var ksid="0",id="",title="",bj="0";
+function loadGrid(){   
+      $("#dg").datagrid({
+            width:800,height:500,nowrap:false,
+            striped:true,border:true,collapsible:false,
+            url:"${ctxPath}/score/listScores",                       
+            queryParams:{"ksid":ksid,"bjs":bj},
+            pagination:true,
+            rownumbers:true,
+            singleSelect:true,
+            fitColumns:true,pageSize:20,
+            loadMsg:'数据加载中...' ,
+            columns:[[
+                               {title : '考试号',field : 'ksid',width:100},
+                               {title : '部门',field : 'dpt',width:90},
+                               {title : '学号',field : 'uid',width:85},
+                               {title : '姓名',field : 'uname',width:80},
+                               {title : '成绩',field : 'score',width:35,formatter: function(value,row,index){
+                                     if(row.score>=0)return "<b style='color:red'>"+row.score+"</b>";
+                                     else return "<b style='color:red'>缺考</b>";
+                               }},
+                              {title:'交卷时间', field:'jjtime',width:150},
+                               {title : '试卷',field : 'paper',width:80,formatter: function(value,row,index){
+                                     if(row.score>=0)return      p="<a href=\"javascript:void(0)\" onclick=\"viewPaper('"+row.paper+"')\">查看试卷</a>";
+                                     else return "";
+                               }}
+                ]],
+          onLoadSuccess:function(data){
+            if(data.total>0) $("#o_score").show();
+          },
+          toolbar:'#tb'
+      });
+}
+function viewPaper(pid){//打开试卷页面
+      parent.addNewTab('查看试卷','${ctxPath}/' + pid);
+}
+function loadbjs(str){//动态加载部门信息
+      var data0=str.split(",");
+      var data1=new Array();
+      for(var i=0;i<data0.length;i++){
+            data1[i]={"label":data0[i],"value":data0[i]};
+      }
+      $('#bjs').combobox('loadData',data1);
+}
+$(function(){
+    $('#pkao').combobox({//加载考试信息
+        url:'${ctxPath}/score/getPkaoCbb',
+        valueField:'id',
+        textField:'text',
+        onSelect: function(rec){
+            ksid=rec.id;
+            $("#o_score").hide();
+            loadbjs(rec.desc);
+        }
+    });
+      $('#bjs').combobox({
+            valueField: 'label',
+            textField: 'value',
+            onSelect: function(rec){
+            bj=rec.value;
+            $("#o_score").hide();
+                  loadGrid();
+          }
+      });
+      loadGrid();
+      $("#o_score").hide();
+      $("#o_score").click(function(){//点击导出
+            $("#o_score").hide();
+           
+            location.href="${ctxPath}/score/score2xls?ksid="+ksid+"&bjs="+bj;
+            type:"post";
+            
+      });
+})
+</script>
+</body>
+</html>

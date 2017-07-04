@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>考试信息</title>
+<link rel="shortcut icon" href="${ctxPath}/include/images/io.ico" >
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/icon.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor-1.2.2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor_lang/zh-cn.js"></script>
+<style type="text/css">
+body{
+ background:url(../include/images/k017.jpg);
+  background-size:cover;
+  background-repeat:no-repeat;
+  
+}
+</style >
+</head>
+<body>
+<!-- 考试未开始或进行中... --> 
+<% if(ksing<2)  {%>
+<div class="ndetail">
+    <div class="ntitle"><center><h1>${pkao.title}<h1></h1></center></div>
+    <div class="nauthor">
+    </div>
+    <div class="nbody">
+        <table>
+        <tr>
+            <td><b style='color:red;'>考试时段：</b></td><td>${pkao.starttime,dateFormat="yyyy-MM-dd hh:mm"}~${pkao.endtime,dateFormat="yyyy-MM-dd hh:mm"}</td>
+        </tr>
+        <tr>
+            <td><b style='color:red;'>考试时长：</b></td><td>${pkao.pc}分钟</td>
+        </tr>
+        <tr>
+            <td><b style='color:red;'>考试简介：</b></td><td>${pkao.intro}</td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;"><b style='color:red;'>考试须知：</b></td>
+            <td style="background-color: rgba(255, 235, 59, 0.35);">
+                一、所有考生应认真阅读考试须知，遵守考场规则，诚信参考。<br><br>
+                二、必须在倒计时结束前交卷。<br><br>
+                <% if (pkao.kmcode=="24") { %>
+                    三、考试《C语言程序设计》编程题时，根据题目要求，先在VC++6.0中编码调试，调试完成后，复制代码，<span style='color:red'>粘贴（Ctrl+v）</span>到考试系统中对应的题目，然后提交。<br><br>
+                    四、<span>C语言的答题代码框架。</span>
+                    <span style="color:#ff0000;">请注意代码中红颜色的部分，该部分与常用的VC编译器不同，</span> <span style="color:#0909f7;">C语言评分使用GCC编译器:</span><br /><br>
+                    #include&nbsp;&lt;stdio.h&gt;&nbsp;<br /><br>
+                    <span style="color:#ff3300;">int</span>&nbsp;main()&nbsp;<br /><br>
+                    {&nbsp;<br /><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;......&nbsp;<br /><br>                  
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ff0000;">return&nbsp;0;&nbsp;<br /><br>
+                    </span>}&nbsp;<br /><br>
+                <%}%>           
+            </td>
+        </tr>
+        </table>
+<!-- 正在考试时间范围内 -->            
+<% if(ksing==1) {%>         
+<p style="margin-top: 25px;text-align: center;font-size: 15px;">
+    <label><input style="width:20px;height:18px;" type="checkbox" id="chk_agree" onclick="Agree(this);" disabled="disabled">我已阅读并知悉考试须知</label>
+    <input type="button" class="login_btn" id="btn_confirm" value="进入考试" onclick="Confirm();">
+    <span style="color:red;" id="lab_time"></span>
+</p>
+<p style="color:red;" id="lab_time"></p>    
+<script type="text/javascript">
+    $(function () {
+        $("#btn_confirm").hide();
+        TimeChange(5);
+    });
+    function TimeChange(val) {// 时间倒计时
+        setTimeout(function () {
+            if (val >= 0) {
+                $("#lab_time").html("请阅读考试须知" + val+ "秒");
+            } else {
+                $('#chk_agree').removeAttr("disabled");
+                $("#lab_time").html("");
+            }
+            val--;
+            TimeChange(val);
+        }, "1000");
+    }
+    function Agree(obj) {// 是否已确定阅读了考试须知
+        if (!obj.checked)
+            $("#btn_confirm").hide(); // 
+        else 
+            $("#btn_confirm").show(); //
+    }
+    function Confirm() {
+        window.location.href = "${ctxPath}/score/goExam?ksid=${ksid!'0'}";
+    }
+</script>    
+<%}%>       
+    </div>
+</div>
+<!-- 考试结束了ksing>=2，只能查看成绩/缺考 -->    
+<%} else if (!isEmpty(scores))  {%>
+<div class="ndetail">
+    <div class="ntitle">${scores.ksid}的考试成绩</div>
+    <div class="nauthor">
+    </div>
+    <div class="nbody">
+        <table>
+        <tr>
+            <td><b style='color:red;'>成绩：</b></td><td>${scores.score}</td>
+            <td><b style='color:red;'>试卷：</b></td>
+            <td>
+            <a href="${ctxPath}/${scores.paper}" target="_blank">查看试卷</a>
+            </td>
+        </tr>
+        </table>
+    </div>
+</div>
+<!-- 考试结束了，没参加考试 -->  
+<%} else {%>
+<div class="ndetail">
+    <div class="ntitle">${ksid!""}次考试已结束，您没有参加此次考试。</div>
+    <div class="nauthor"></div>
+</div>
+<%}%>
+</body>
+</html>

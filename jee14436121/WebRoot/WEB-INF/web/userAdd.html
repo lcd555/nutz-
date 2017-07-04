@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/icon.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/easyui-lang-zh_CN.js"></script>
+</head>
+<body>
+<div class="easyui-panel" style="width:580px;padding:30px 60px">
+      <form id="adduser_form" method="post">
+            <div style="margin-bottom:20px">
+                  <input id="dpt" name="dpt" class="easyui-textbox" data-options="prompt:'部门',required:true" style="width:100%;height:32px">
+            </div>
+            <div style="margin-bottom:20px">
+                  <input id="uname" name="uname" class="easyui-textbox" data-options="prompt:'姓名',required:true" style="width:100%;height:32px">
+            </div>
+            <div style="margin-bottom:20px">
+                  <input id="uid" name="uid" class="easyui-textbox" data-options="prompt:'考号',required:true" style="width:100%;height:32px;">
+            </div>
+            <div style="margin-bottom:20px">
+                  <div>登录密码:</div>
+                  <input name="password" id="password" class="easyui-validatebox easyui-textbox" type="password" data-options="icons:[{iconCls:'icon-lock'}],required:true" style="width:100%;height:32px" >
+            </div>
+            <div style="margin-bottom:20px">
+                  <div>确认密码:</div>
+                  <input id="pwd2"  naem="pwd2" validType="equals['#password']" class="easyui-validatebox easyui-textbox" type="password" data-options="icons:[{iconCls:'icon-lock'}]" style="width:100%;height:32px" >
+            </div>
+            <div style="margin-bottom:20px">
+                  <div>角色:</div>
+                  <input type="radio" name="role" value="5"   />考生
+                  <input type="radio" name="role" value="1" />管理员
+            </div>
+            </form>
+            <div style="text-align:center;">
+                  <a id="saveuser" href="#" class="easyui-linkbutton" iconCls="icon-ok" style="width:132;height:32px">保存</a>
+                  <a id="back" href="#" class="easyui-linkbutton" iconCls="icon-back" style="width:132;height:32px">返回</a>
+            </div>
+      </div>
+      <script>
+      var uid;
+      var opened_node=null;
+$(function(){
+      $('#saveuser').click(function(){
+            if(! ($("#adduser_form").form('enableValidation').form('validate')))return;
+            var p=$('#password').val(), p2=$('#pwd2').val();
+            if(p!=p2){
+                  parent.dlg_h(300,120,"校验失败！","密码不一致！",null,null,"warning");
+                  return;
+            }
+            uid=$("#uid").textbox('getValue');
+            jQuery.ajax({
+                  type: 'POST',
+                  url : "${ctxPath}/user/saveAdd",
+                  data : $("#adduser_form").serialize(),
+                  success : function (res) { 
+                        if(res=="true"){
+                               parent.dlg_h(300,140,"添加成功！","你已添加用户:"+uid,dlg_close,null,"info");
+                        }else{
+                               parent.dlg_h(300,140,"添加失败！","添加失败！",null,null,"error");
+                        }                               
+                        return false;
+                  },
+                  error : function(res) {parent.dlg_h(300,140,"系统提示","系统错误！",null,null,"error");}
+            });
+      });
+      $('#back').click(function(){dlg_close();});
+ 
+})
+function dlg_close(){
+      parent.$("#mainframe").attr("src","${ctxPath}/user/goList");
+      var tab = parent.$("#tabs").tabs("getSelected");
+      var title1="用户信息";
+     parent.$("#tabs").tabs("update", {tab:tab,options: {title: title1}});
+}
+</script>
+
+</body>
+</html>

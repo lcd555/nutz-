@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head><title>阅读</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+body{
+ background:url(../include/images/k018.jpg);
+  background-size:cover;
+  background-repeat:no-repeat;
+  
+}
+textarea{
+ background:url(../include/images/k018.jpg);
+  background-size:cover;
+  background-repeat:no-repeat;
+  
+}
+</style>
+<link rel="shortcut icon" href="${ctxPath}/include/images/io.ico" >
+</head>
+<body>
+      <div style="background:#B3DFDA;padding:0 10px 0 10px;vertical-align: middle;">
+      
+           <img src="${ctxPath}/include/images/ut.jpg" width="126" height="50" />
+            <div style="float:left"><center><h1 style="font-size:20pt">欢迎来到新闻联盟</h1></center></div>
+            <div style="float:right;line-height:50px;margin-right:10px;font-size: 9pt;">
+                   <span>【</span><a style="color:blue;" href="javascript:window.opener=null;window.open('','_self');window.close();"><span>关闭窗口</span></a><span>】</span>
+            </div>
+            <div style="float:right;line-height:50px;margin-right:10px;">登录用户：${me.uname}             |</div>
+      </div>
+<div class="ndetail" >
+      <center><div class="ntitle"><h1 style="color:violet">${news.title}</h1></div>
+      <div class="nauthor">
+            <div>来源: &nbsp;<strong>${news.cruser}</strong> &nbsp;&nbsp;发布时间:&nbsp;  <strong>${news.tjdate,dateFormat="yyyy-MM-dd"}</strong>&nbsp;&nbsp;访问量:&nbsp; <strong>[<span>${news.hitnum}</span>]</strong></div>
+      </div></center>
+      <br><br><br>
+      <div class="nbody">
+            <div id="vsb_content"> <h2 style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${news.content}</h2></div>
+      </div>
+</div>
+</body>
+</html>

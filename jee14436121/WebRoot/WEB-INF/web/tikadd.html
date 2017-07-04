@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/icon.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor-1.2.2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor_lang/zh-cn.js"></script>
+<title>Insert title here</title>
+</head>
+<body>
+<script type="text/javascript">
+var xhebase="${ctxPath}/",uploadurl="${ctxPath}/file/upload";
+var xhsetting={//简化在线编辑器
+      //urlBase:"${ctxPath}/",
+      internalScript:true,
+      tools:'FontSize,FontColor,Img,Source,About',
+      upImgUrl:uploadurl,upImgExt:"jpg,jpeg,gif,png"
+      //html5Upload:false,
+      //onUpload:insertUpload
+      }
+ 
+$(function(){
+      $("#qname").xheditor(xhsetting);
+      $("#ansa").xheditor(xhsetting);
+      $("#ansb").xheditor(xhsetting);
+      $("#ansc").xheditor(xhsetting);
+      $("#ansd").xheditor(xhsetting);
+});
+
+
+
+function a(obj){
+
+var d=obj.value;
+if(d=="a"){
+document.getElementById("qans").value="A";
+}
+
+if(d=="b"){
+document.getElementById("qans").value="B";
+}
+if(d=="c"){
+document.getElementById("qans").value="C";
+}
+if(d=="d"){
+document.getElementById("qans").value="D";
+}
+
+}
+
+
+
+
+</script>  
+ </head>
+<body>
+<input type="text" onblur="a(this)" id="o"/>
+<div style="margin:20px 0;"></div>
+      <div class="easyui-panel" style="width:780px;padding:30px 60px">
+      <form id="addtik_form" method="post">
+      <div style="margin-bottom:2px">
+        <div>科目:</div>
+      </div>
+      <div style="margin-bottom:5px">
+        <input id="kmcode" name="kmcode" type="radio" value="24" checked="checked" />C语言程序设计
+      </div>
+            <div style="margin-bottom:2px">
+                  <div>题干:</div>
+            </div>
+            <div style="margin-bottom:5px">
+                  <input name="gid" type="hidden" value="1" />
+                  <input name="tiid" type="hidden" value="1" />
+                  <input name="qteasy" type="hidden" value="1" />
+                  <textarea id="qname" name="qname"  rows="12" cols="80" style="width: 99%;background:url(${ctxPath}/include/xheditor/demobg.jpg) no-repeat right bottom fixed"></textarea>
+            </div>
+            <div style="margin-bottom:2px">
+                  <div>所属知识块：</div>
+            </div>
+            <div style="margin-bottom:15px;border-bottom: solid 2px red;">
+                  <select id="kbcode" class="easyui-combobox" name="kbcode" style="width:300px;height:32px;">
+                      <option value="2401" selected>C基础知识和顺序结构</option>
+                      <option value="2402">字符、选择和循环结构</option>
+                      <option value="2403">函数、指针和数组</option>
+                      <option value="2404">字符串、函数的递归、标识符的作用域和存储类</option>
+                      <option value="2405">编译预处理、动态分配、结构体、位运算和文件</option>
+                  </select>
+            </div>
+            <div style="margin-bottom:15px;border-bottom: solid 2px red;">
+            <table><tr>
+            <td><div>题型：</div></td>
+            <td style="width:90px"><input id="qtcode" name="qtcode" type="radio" value="1" checked="checked" />单选题</td>
+            <td><div>分值：</div></td>
+            <td style="width:90px"><input id="fenvalue" name="fenvalue" class="easyui-numberbox" value="2" data-options="required:true,precision:1" style="width:50px;height:32px"></td>
+            <td><div >答案（一个大字字母）：</div></td>
+            <td style="width:90px"><input id="qans" name="qans" style="width:50px;height:32px"   typr="text" data-options="required:true"  onblur="a(this)"></td>
+            </tr></table>
+            </div>
+ 
+            <div style="margin-bottom:2px">
+                  <div>选项A:</div>
+            </div>
+            <div style="margin-bottom:5px">
+                  <textarea id="ansa" name="ansa" rows="6" cols="80" style="width: 99%;"></textarea>
+            </div>
+            <div style="margin-bottom:2px">
+                  <div>选项B:</div>
+            </div>
+            <div style="margin-bottom:5px">
+                  <textarea id="ansb" name="ansb" rows="6" cols="80" style="width: 99%;"></textarea>
+            </div>
+            <div style="margin-bottom:2px">
+                  <div>选项C:</div>
+            </div>
+            <div style="margin-bottom:5px">
+                  <textarea id="ansc" name="ansc" rows="6" cols="80" style="width: 99%;"></textarea>
+            </div>
+            <div style="margin-bottom:2px">
+                  <div>选项D:</div>
+            </div>
+            <div style="margin-bottom:5px">
+                  <textarea id="ansd" name="ansd" rows="6" cols="80" style="width: 99%;"></textarea>
+            </div>
+            </form>
+            <div style="text-align:center;">
+                  <a id="savetik" href="#" class="easyui-linkbutton" iconCls="icon-ok" style="width:132;height:32px">保存</a>
+                  <a id="back" href="#" class="easyui-linkbutton" iconCls="icon-back" style="width:132;height:32px">返回</a>
+            </div>
+      </div>
+      <script>
+ 
+$(function(){
+
+      $('#savetik').click(function(){///校验
+            if($("#qname").val().length<=0){parent.dlg_ok(400,140,"添加题目","必须填写题干",null,"warning");return;}
+            
+            if(!(/^[A-D]{1}$/.test($("#qans").val()))){alert("必须填写正确参考答案");$('#qans').next('span').find('input').focus();return;}
+            if($("#fenvalue").val().length<=0){alert("必须填写分值");return;}
+            if($("#ansa").val().length<=0){alert("必须填写选项A");return;}
+            if($("#ansb").val().length<=0){alert("必须填写选项B");return;}
+            if($("#ansc").val().length<=0){alert("必须填写选项c");return;}
+            if($("#ansd").val().length<=0){alert("必须填写选项d");return;}
+           
+            $.ajax({
+                  type: 'POST',
+                  url : "${ctxPath}/tik/saveAdd",
+                  data : $("#addtik_form").serialize(),
+                  success : function (res) { 
+                        if(res=="true"){
+                               parent.dlg_h(300,140,"添加成功！","你已添加题目",dlg_close,null,"info");
+                        }else{
+                               parent.dlg_h(300,140,"添加失败！","添加失败！",null,null,"error");
+                        }                               
+                        return false;
+                  },
+                  error : function(res) {parent.dlg_h(300,140,"系统提示","系统错误！",null,null,"error");}
+            });
+      });
+      $('#back').click(function(){dlg_close();});
+ 
+})
+function dlg_close(){
+      parent.$("#mainframe").attr("src","${ctxPath}/tik/goList");
+      var tab = parent.$("#tabs").tabs("getSelected");
+      var title1="题库管理";
+     parent.$("#tabs").tabs("update", {tab:tab,options: {title: title1}});
+}
+      </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/icon.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor-1.2.2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor_lang/zh-cn.js"></script>
+</head>
+<body>
+<div style="margin:20px 0;"></div>
+   <div class="easyui-panel" style="width:600px;padding:5px 10px">
+   <form id="addpkao_form" class="easyui-form" method="post">
+      <table class="stripe"><tr>
+      <td style="width:300px"><div>选择部门（该部门考生都参加考试）:</div></td>
+      <td><div>选择科目:</div></td>
+      </tr>
+      <tr>
+      <td style="width:300px"><input name="bjs" id="bjs"></td>
+      <td>
+        <input name="kmcode" type="radio" value="24" checked="checked">C语言程序设计
+        <input name="kmcode" type="radio" value="100">数电
+        <input name="kstype" type="hidden" value="1">
+        <input name="kch" type="hidden" value="1">
+        <input name="chkid" type="hidden" value="0">
+        <input name="handleid" type="hidden" value="0">
+        <input name="status" type="hidden" value="0">
+        <input name="sentp" type="hidden" value="0">
+        <input name="hsp" type="hidden" value="0">
+      </td>
+      </tr>
+      <tr>
+      <td colspan="2">
+        <table id="ticnt" border="1" cellspacing="0" bordercolor="#000" style="width: 550px; ">
+           <tr><td id="kbtd">知识块代码</td></tr>
+           <tr><td id="cnttd">知识块题量</td></tr>
+           <tr><td id="ctntd">设置抽题数</td></tr>
+        </table>
+      </td>
+      </tr>
+      <tr>
+      <td colspan="2"><div>考试名称：</div></td>
+      </tr>
+      <tr>
+      <td colspan="2"><input id="title" name="title" class="easyui-textbox" data-options="prompt:'考试名称',required:true" style="width:500px;height:32px">
+      </td>
+      <tr>
+      <td colspan="2"><div>考试简介:</div></td>
+      </tr>
+      <tr>
+      <td colspan="2"><textarea id="intro" name="intro" rows="10" cols="80" style="width: 99%;"></textarea></td>
+      </tr>  
+      <tr>
+      <td><div>考试时长（分钟）：</div></td>
+      <td><div>发布人:</div></td>
+      </tr>
+      <tr>
+      <td><input id="pc" name="pc" class="easyui-numberbox" value="90" data-options="required:true,precision:0,min:10,max:120" style="width:100px;height:32px"></td>
+      <td><input name="cruser" class="easyui-textbox" value="${me.uname}" data-options="prompt:'发布人',required:true" style="width:100px;height:32px"></td>
+      </tr>
+      <tr>
+      <td><div >开始时间：</div></td>
+      <td><div >终止时间：</div></td>
+      </tr>
+      <tr>
+      <td>
+        <input class="easyui-datetimebox" name="starttime" id="starttime" value="" style="width:180px;height:32px;" data-options="required:true">
+      </td>  
+      <td>
+        <input class="easyui-datetimebox" name="endtime" id="endtime" value="" style="width:180px;height:32px;" data-options="required:true">
+      </td>
+      </tr></table>
+      </form>
+      <div style="text-align:center;">
+        <a id="savepkao" href="#" class="easyui-linkbutton" iconCls="icon-ok" style="width:132px;height:32px">保存</a>
+        <a id="back" href="#" class="easyui-linkbutton" iconCls="icon-back" style="width:132px;height:32px">返回</a>
+      </div>
+   </div>
+   
+   <script>
+var kmcode="24",kbnum=0;//知识块数量
+var ctnArr="";//指定抽题数
+var kbArr="";//知识块编码
+var timerid;
+function loadTiCnt(){
+   //kmcode = $('input:radio[name="kmcode"]:checked').val();
+   $.ajax({
+      url:"${ctxPath}/pkao/getTiCnt?kmcode="+kmcode,
+      type:"post",
+      success:function(data){
+      //先移除原有数据，再添加新的
+        $("#kbtd").siblings("td").remove();//移除同胞兄弟元素
+        $("#cnttd").siblings("td").remove();
+        $("#ctntd").siblings("td").remove();
+        data=JSON.parse(data);
+        var tr1="",tr2="",tr3="";
+        kbnum=data.length;
+        kbArr="";
+        var kbtinum=0;//题库中题量
+        if(kbnum>0){
+           for (var i=0;i<kbnum;i++){
+              var data1=data[i];
+              tr1+="<td>"+data1.kbcode+"</td>";
+              tr2+="<td>"+data1.cnt+"</td>";
+              tr3+="<td><input id='kb"+(i+1)+"' class='easyui-numberbox' value='0' data-options='required:true,precision:0,min:0,max:"+data1.cnt+"' onChange(newValue,oldValue) style='width:40px;height:32px'></td>";
+              kbtinum+=data1.cnt;
+              kbArr+=data1.kbcode+",";
+           }
+           tr1+="<td>合计</td>";
+           tr2+="<td>"+kbtinum+"</td>";
+           tr3+="<td id='sumctn'>0</td>";
+           $("#kbtd").after(tr1);
+           $("#cnttd").after(tr2);
+           $("#ctntd").after(tr3);
+           timerid=window.setInterval(dyneasyui,1000); 
+        } else {
+           tr1+="<td>题库中缺少题目，不能排考</td>";
+           tr2+="<td>0</td>";
+           tr3+="<td id='sumctn'>0</td>";
+           $("#kbtd").after(tr1);
+           $("#cnttd").after(tr2);
+           $("#ctntd").after(tr3);
+           $('#savepkao').linkbutton('disable');
+        }
+      },
+      error:function(data){alert("系统错误！");return;}
+   });
+}
+function dyneasyui(){//动态加载的easyui控件，需要重新parse,样式都会生效
+   if(kbnum>0 && $("#sumctn")){
+      $.parser.parse($("#ticnt"));
+      for (var i=1;i<=kbnum;i++){
+        $("#kb"+i).numberbox({
+           onChange:function(newValue,oldValue){sumctn();}
+        });
+      }
+      window.clearInterval(timerid);
+   }
+}
+function sumctn(){
+   var s=0;ctnArr="";
+   for (var i=1;i<=kbnum;i++){
+      var n=parseInt($("#kb"+i).numberbox("getValue"));
+      ctnArr+=n+",";
+      s+=n;
+   }
+   $("#sumctn").text(s);
+}
+$(function(){
+   loadTiCnt();
+   $('#bjs').combotree({
+   width:200,
+   height:32,
+    url: '${ctxPath}/pkao/getBjs',
+    required: true,
+    multiple:true,
+    editable: false,
+    //onlyLeafCheck:true,
+    checkbox:true,
+    lines:true
+});
+$("#intro").xheditor({
+   width:500,
+   internalScript:true,
+   tools:'FontSize,FontColor,Source,About',
+});
+$('input:radio[name="kmcode"]').click(function(){
+   kmcode=$(this).val();
+   loadTiCnt();
+});
+   $('#savepkao').click(function(){///校验
+      if(!$("#addpkao_form").form("enableValidation").form("validate")) return;
+      if(parseInt($("#sumctn").text())<=0){alert("没有设置抽题数");return;}
+     
+      //校验起止时间差是否大于等于时长pc
+      var starttime=$('#starttime').datebox('getValue');
+      var endtime=$('#endtime').datebox('getValue');
+      var start=new Date(starttime.replace(/-/g, "/"));
+      var end=new Date(endtime.replace(/-/g, "/"));
+      var mdiff=(end-start)/1000/60;
+      if(mdiff<0){alert("终止时间不能在开始时间之前！");return;}
+      var pc=$('#pc').numberbox('getValue');
+      if(mdiff<parseInt(pc)){alert("终止时间与开始时间之差不能小于考试时长"+pc+"分钟");return;}
+      ctnArr=ctnArr.substring(0,ctnArr.length-1);
+      kbArr=kbArr.substring(0,kbArr.length-1);
+      $("#loading").show();//抽题排考等待中...
+      $.ajax({
+        type: 'POST',
+        url : "${ctxPath}/pkao/saveAdd",
+      data :$("#addpkao_form").serialize()+"&"+$.param({"ctnarr":ctnArr})+"&"+$.param({"kbarr":kbArr}),
+        success : function (res) {
+           $("#loading").hide();//抽题排考完成
+           if(res=="true"){
+              parent.dlg_h(300,140,"添加成功！","你已添加考试",dlg_close,null,"info");
+           }else{
+              parent.dlg_h(300,140,"添加失败！","添加失败！",null,null,"error");
+           }                     
+           return false;
+        },
+        error : function(res) {
+           $("#loading").hide();
+           parent.dlg_ok(300,140,"系统提示","系统错误！",null,"error");}
+      });
+   });
+   $('#back').click(function(){dlg_close();});
+ 
+})
+function dlg_close(){
+  parent.$("#mainframe").attr("src","${ctxPath}/pkao/goList");
+      var tab = parent.$("#tabs").tabs("getSelected");
+      var title1="排考管理";
+     parent.$("#tabs").tabs("update", {tab:tab,options: {title: title1}});
+}
+      </script>
+
+ 
+</body>
+</html>

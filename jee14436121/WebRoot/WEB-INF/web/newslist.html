@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="../include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="../include/css/themes/icon.css">
+<script type="text/javascript" src="../include/js/jquery.min.js"></script>
+<script type="text/javascript" src="../include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../include/js/easyui-lang-zh_CN.js"></script>
+<% include("dlg.html"){}%>
+<title>Insert title here</title>
+</head>
+<body>
+<table id="dg" cellpadding="2" ></table>
+<div id="tb" style="padding:5px;">
+      <input id="s_name" class="easyui-textbox"  data-options="prompt:'标题关键字...'" style="width:200;height:32">
+      <a id="s_news" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+      <a id="a_news" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'">添加</a>
+ 
+</div>
+<script type="text/javascript">
+var s_name="",id="",title="";
+function loadGrid(){
+      s_name=$("#s_name").val();
+      $("#dg").datagrid({
+            width:1000,height:500,nowrap:false,
+            striped:true,border:true,collapsible:false,
+            url:"${ctxPath}/news/listNews",                    
+     queryParams:{"s_name":s_name},
+            pagination:true,
+            rownumbers:true,
+            fitColumns:true,pageSize:20,
+            loadMsg:'数据加载中...' ,
+            columns:[[
+                               {title:'标题', field:'title',width:200},
+                              {title:'发布时间', field:'tjdate',width:100},
+                  {title:'操作', field:'hitnum',width:100, formatter: function(value,row,index){
+                          var p="<a href=\"javascript:editNews('"+row.id+"')\">修改</a>";
+                          p+="    |   <a href=\"javascript:delNews('"+row.id+"','"+row.title+"')\">删除</a>";
+                          return p;
+                    }},
+                ]],
+              toolbar:'#tb'
+      });
+}
+function editNews(id){
+      parent.$("#mainframe").attr("src","${ctxPath}/news/goEdit?id="+id);
+      var tab=parent.$("#tabs").tabs("getSelected");
+      parent.$("#tabs").tabs("update",{tab:tab,options:{title:"修改新闻信息"}});
+}
+function delNews(ph,titl){
+      id=ph;title=titl;
+      parent.dlg_h(400,140,"确认删除？","您确认要删除“"+title+"”吗？",dlg_ok,null,"question");
+}
+function dlg_ok(){
+      $.ajax({
+            url:"${ctxPath}/news/doDel1?id="+id,
+            type:"post",
+            success: function(res){
+                  if(res=="true"){
+                        parent.dlg_h(400,140,"删除成功","您已删除新闻："+title,null,null,"info");
+                        id="";s_name="";
+                        loadGrid();
+                  }else {
+                        parent.dlg_h(300,140,"删除失败",res,null,null,"error");
+                  }
+                  return false;
+            },
+            error:function(res){
+                  parent.dlg_h(300,140,"系统提示","系统错误",null,null,"error");
+            }
+      })
+}
+$(function(){
+      loadGrid();
+      $("#s_news").click(function(){
+            s_name=$("#s_name").val();
+            loadGrid();
+      });
+      $("#a_news").click(function(){
+            parent.$("#mainframe").attr("src","${ctxPath}/news/goAdd");
+            var tab=parent.$("#tabs").tabs("getSelected");
+            parent.$("#tabs").tabs("update",{tab:tab,options:{title:"添加新闻信息"}});
+      });
+      $("#tb").bind("keydown",function(e){           
+            var theEvent = e || window.event; // 兼容FF和IE和Opera  
+            var code = theEvent.keyCode || theEvent.which || theEvent.charCode;   
+            if (code == 13) {//回车执行查询
+            $("#s_news").click();
+        }   
+      });
+})
+</script>
+
+</body>
+</html>

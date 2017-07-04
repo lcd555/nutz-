@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<div id="dlg"  style="padding:10px;font-size:14pt;" ></div>
+  <script type="text/javascript">
+  /*
+  messager-icon:error,info,question,warning       
+  */
+  function dlg_h(w,h,t,content,fun_ok,fun_cancel,icon){
+        if(icon)$("#dlg").html("<div class=\"messager-icon messager-"+icon+"\"></div>"+content);
+        else $("#dlg").html(content);
+        if(w>800)w=800;
+        else w='auto';
+        if(h<400)h='auto';
+        $('#dlg').dialog({
+                width:w, height:h, title:t,
+                iconCls: 'icon-tip',resizable: false, modal: true, closed: true,
+                buttons: [{
+                        text:'确认',iconCls:'icon-ok',
+                        handler:function(){
+                               $('#dlg').dialog('close');
+                               if(fun_ok)fun_ok();
+                        }
+                  },{
+                        text:'取消',iconCls:'icon-cancel',
+                        handler:function(){
+                               $('#dlg').dialog('close');
+                               if(fun_cancel)fun_cancel();
+                        }
+                  }]
+            });
+        $("#dlg").dialog("open");
+        $('#dlg').dialog('center');
+  }
+  function dlg_ok(w,h,t,content,fun_ok,icon){
+        if(icon)$("#dlg").html("<div class=\"messager-icon messager-"+icon+"\"></div>"+content);
+        else $("#dlg").html(content);
+        if(w>800)w=800;
+        else w='auto';
+        if(h<400)h='auto';
+        $('#dlg').dialog({
+                width:w, height:h, title:t,
+                iconCls: 'icon-tip',resizable: false, modal: true, closed: true,
+                buttons: [{
+                        text:'确认',iconCls:'icon-ok',
+                        handler:function(){
+                               $('#dlg').dialog('close');
+                               if(fun_ok)fun_ok();
+                        }
+                  }]
+            });
+        $("#dlg").dialog("open");
+        $('#dlg').dialog('center');
+  }
+  </script>
+</body>
+</html>

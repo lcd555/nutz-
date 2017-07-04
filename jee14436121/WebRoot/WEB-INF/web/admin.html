@@ -1,0 +1,122 @@
+<!DOCTYPE html >
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/icon.css">
+<link rel="shortcut icon" href="${ctxPath}/include/images/io.ico" type="image/x-icon">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/tabpage.js"></script>
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/bct.css"/>
+<script type="text/javascript" src="${ctxPath}/include/js/bct.js"></script>
+<title> administrator </title>
+<% include("dlg.html"){}%>
+<style type=text/css>
+div{
+	background:url(${ctxPath}/include/images/127.jpg);
+	background-repeat:no-repeat;
+	background-size:cover;
+}
+</style>
+</head>
+<body class="easyui-layout">
+      <div data-options="region:'north',border:false"
+           style="background:#B3DFDA;padding:0 10px 0 10px;vertical-align: middle;">
+            
+            <div style="float:left;"><img src="${ctxPath}/include/images/ut.jpg" width="126" height="50" /></div>
+            <div style="float:left;"><h1>考试系统后台管理</h1></div>
+            <div style="float:right;line-height:50px;margin-right:10px;">
+                  <a href="#" id="logout">退出</a>
+            </div>
+            <div style="float:right;line-height:50px;margin-right:10px;">登录用户：【${me.uname} 】            |</div>
+      </div>
+      <div data-options="region:'west',split:true,title:'系统菜单'" style="width:180px;padding:10px;">
+            <ul id="menutree"  class="easyui-tree"></ul>
+            
+      </div>
+      <div data-options="region:'south',border:false"
+            style="height:30px;padding:5px;text-align:center;font-family: arial;
+  color: #A0B1BB;">Copyright © 2017 JavaEE. All Rights Reserved.
+      </div>
+      <div data-options="region:'center'" >
+            <div id="tabs" class="easyui-tabs" fit="true" border="false">
+                  <div title="" id="home">
+                        <iframe id="mainframe" name="mainframe" scrolling="auto"
+                               height="100%" width="99%" frameboder="0" src=""></iframe>
+                  </div>
+            </div>
+      </div>
+     <div id="backtotop" style="right: 0px; top: 500px; display: block;">神</div>
+     <script type="text/javascript" >
+var opened_node=null;
+$(function(){
+ setTabName("考生管理");
+  $("#mainframe").attr("src", "${ctxPath}/user/goList");
+  $("#menutree").tree(
+            {
+                  url : "${ctxPath}/menutree",
+                  animate : true,
+                  onClick : function(node) {
+                        if (!node.attributes) {
+                               if (!opened_node) {
+                                     $("#menutree").tree('expand', node.target);
+                                     opened_node = node.target;
+                               } else if (opened_node != node.target) {
+                                    $("#menutree").tree('collapse', opened_node);
+                                     $("#menutree").tree('expand', node.target);
+                                     opened_node = node.target;
+                               }
+                        } else {
+                               $("#mainframe").attr("src", "${ctxPath}/" + node.attributes.url);
+                               setTabName(node.text);
+                        }
+                  },
+                  onLoadSuccess : function(node, data) {
+                        $("#menutree").tree('expandAll');
+                  }
+      });
+      })
+      
+      $("#logout").click(function() {
+      dlg_h(300, 140, "退出系统？", "您确认要退出系统吗？", dlg_ok1, null, "question");
+})
+
+function swNewTab(newtitle,newurl){
+      if($('#tabs').tabs('exists',newtitle))return;
+      closeAllTabs();
+      $('#tabs').tabs('add',{
+          title:newtitle,
+          content:'<iframe id="mainframe" name="mainframe" scrolling="auto" height="99%" width="99%" frameboder="0" src="'+newurl+'"></iframe>',
+          closable:true
+    });
+}
+
+function closeAllTabs(){
+      var tabs=$("#tabs").tabs("tabs");
+      for(var i=0;i<tabs.length;i++){
+            $("#tabs").tabs("close",i);
+      }
+}
+
+function addNewTab(newtitle,newurl){
+      if($('#tabs').tabs('exists',newtitle))return;
+      $('#tabs').tabs('add',{
+          title:newtitle,
+          content:'<iframe id="mainframe" name="mainframe" scrolling="auto" height="99%" width="99%" frameboder="0" src="'+newurl+'"></iframe>',
+          closable:true
+    });
+}
+function dlg_ok1() {
+      top.location.href = "${ctxPath}/user/doLogout";
+}
+
+
+</script>
+</body>
+
+
+
+
+</html>

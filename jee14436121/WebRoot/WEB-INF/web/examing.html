@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>考试中</title>
+<meta name="viewport" content="maximum-scale=2.0,minimum-scale=1.0,width=device-width,initial-scale=1.0"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<link rel="shortcut icon" href="${ctxPath}/include/images/io.ico" type="image/x-icon">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/icon.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor-1.2.2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/xheditor/xheditor_lang/zh-cn.js"></script>
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/mobile.css">
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/themes/color.css">
+<script type="text/javascript" src="${ctxPath}/include/js/jquery.easyui.mobile.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/store+json2.min.js"></script>
+<script type="text/javascript" src="${ctxPath}/include/js/timer.js"></script>
+<link rel="stylesheet" type="text/css" href="${ctxPath}/include/css/paper.css">
+<link href="${ctxPath}/include/css/login.css" type="text/css" rel="stylesheet" />
+<link rel=“stylesheet” type="text/css" href="${ctxPath}/include/css/bct.css"/>
+<script type="text/javascript" src="${ctxPath}/include/js/bct.js"></script>
+</head>
+<body >
+<div id="backtotop" style="background:url(${ctxPath}/include/images/resume_titBj.png);"><button onClick="endks();" class="tn-button-text"
+								>交卷</button></div>
+<div class="easyui-navpanel" >
+    <header>
+<div class="m-toolbar" style="background: #FF8400; height: 40px; border-bottom: 1px solid #DDDFE3;line-height: 40px;  color: #FFFFFF;  width: 100%;">
+<div class="m-title">
+<div style="width:150px;height:32px;float: left;">考生：<span id="user">${me.uname}</span></div>
+<div style="width:180px;height:32px;float: right;" id="kstimer"></div>
+</div>
+</div>
+    <div  id="d-ticardi" class="easyui-panel" title="答题卡" style="padding:5px 10px;width:100%;max-height:200px;" data-options="iconCls:'icon-edit'">
+      </div>
+   </header>
+<!-- 题目 -->
+      <div id="div_main_content"></div>
+    <footer>
+        <div class="m-buttongroup m-buttongroup-justified" style="min-width:200px;max-width:500px">
+       
+       
+            <a href="javascript:preti()" class="easyui-linkbutton" data-options="iconCls:'icon-preti',size:'large',iconAlign:'top',plain:true">~上一题</a>
+            <a id="jiaoj" href="javascript:endks()" class="easyui-linkbutton" data-options="iconCls:'icon-jiaoj',size:'large',iconAlign:'top',plain:true">交卷</a>
+            <a href="javascript:nextti()" class="easyui-linkbutton" data-options="iconCls:'icon-nexti',size:'large',iconAlign:'top',plain:true">下一题~</a>
+        </div>
+    </footer>    
+</div>
+<div id="ksdlg" class="easyui-dialog" title="考试在线提醒" style="width:200px;height:auto;padding:10px" closed="true" data-options="iconCls: 'icon-glass',buttons: '#dlg-buttons',modal: true">
+      
+</div>
+<div id="dlg-buttons">
+      <a href="javascript:void(0)" class="easyui-linkbutton" onclick="dowhat()">确定</a>
+      <a id="qxabc" href="javascript:void(0)" class="easyui-linkbutton" onclick="javascript:$('#ksdlg').dialog('close')">取消</a>
+</div>     
+<form id="chkform">
+  <input type="hidden" name="ksid" id="ksid" />
+  <input type="hidden" name="uid" id="uid" />
+  <input type="hidden" name="score" id="score" />
+  <input type="hidden" name="titable" id="titable" value="c" />
+  <input type="hidden" name="tiid" id="tiid" value="0" />
+  <input type="hidden" name="memory" id="memory" />
+  <input type="hidden" name="srccode" id="srccode" />
+  <input type="hidden" name="errnum" id="errnum" />
+</form> 
+   
+<% include("dlg.html"){}%>
+
+<script>
+
+ if( ${outdate}) top.location.href = "${ctxPath}/user/doNoLogin";
+      var base="${ctxPath}";
+      var atime=parseInt(${atime})*60;//真实的可用考试时长(s)
+      var ksid="${mypkao.ksid}";
+      var uid="${mypkao.uid}";
+      var jjing=false;//交卷中...标记，如果交卷出错，刷新页面可以重新交
+      var jjed=false;//已交卷
+var __Timer=null;
+var timerId;
+var currentti=1,oldti=0;//当前题题号、上一题题号
+var chkNum=0,didNum=0,nodoNum=chkNum;//试卷中题目的总数量，已完成题数，未完成题数
+var u_da={},ti_id={};//考生答案、题目在题库中的id号
+var dowhat1=0;
+var bigtino = [ "0","一", "二", "三", "四", "五", "六", "七", "八" ];    
+var questype = ["0", "单选题", "多选题", "不定项选择题", "判断题", "win基本操作题", "上网题",
+            "word操作题", "excel操作题", "ppt操作题", "CC程序填空题", "CC程序改错题", "CC程序设计题",
+            "AC基本操作题", "AC简单应用题", "AC综合应用题", "填空题", "简答题" ];
+var tagtype = ["0","radio","checkbox","checkbox","radio"];//与题型对应使用的标签
+String.prototype.trim=function(){//去除字符串前后的空格
+      return this.replace(/(^\s*)|(\s*$)/g, "");
+}
+function dowhat(){//完成哪一种操作
+      switch(dowhat1){
+      case 0:$('#ksdlg').dialog('close');break;
+      case 1:jiaoj();dowhat1=0;break;
+      case 3:window.location.href="${ctxPath}/";  break;
+      }
+}
+function endks(){//点击交卷
+      saveOldti();
+      $('#jiaoj').linkbutton('disable');
+      var html0="您已做<span style='color:green;'>"+didNum+"</span>题，还有<span style='color:red;'>"+nodoNum+"</span>题未做。<br>您确定现在交卷吗？";
+      dowhat1=1;
+      dlg_h(300,120,"考试在线提醒",html0,dowhat,nodo,"info");
+}
+function nodo(){//点击交卷后，又取消
+    $('#jiaoj').linkbutton('enable');
+}
+function jiaoj(){//点击交卷后，确认
+      if(jjing)return;
+      else jjing=true;
+      __Timer.stop();
+      $('#ksdlg').dialog('close');
+      $("#loading").show();
+      var ti1=null;
+      var data0 = "";
+      var ua, tid, fv=0,tifv=0, re;
+      var tscore=0,p1="",p2="";
+      var tx="";var bigtinum=0;
+      var s1="",s2="";
+      for (var i = 1; i < chkNum; i++) {
+            s1+=ti_id[i].id+",";
+            s2+=u_da[i]+",";
+      }
+      s1+=ti_id[i].id;
+      s2+=u_da[i];
+      $.ajax({
+            type : "POST",
+            url : "${ctxPath}/score/saveScores",
+            data : {'ids':s1,'s2':s2,'ksid':ksid},
+            success : function(res) {
+                  res = $.parseJSON(res);                                                  
+                  if (res.msg == "0") {
+                        dlg_h(300,120,"考试在线提醒","交卷异常！",null,nodo,"error");
+                        dowhat1=0;$("#loading").hide();
+                        return;
+                  }else if (res.msg == "1") {
+                        store.clear();
+                        $("#loading").hide();
+                        jjed=true;
+                        //显示分数
+                       var html0="交卷成功！您的得分是：<span style='color: red;'>"+res.tscore+"</span>";
+                        dlg_ok(300,120,"考试在线提醒",html0,saveok,"info");
+                  }
+            },
+            error : function() {
+                  dlg_h(300,120,"考试在线提醒","系统错误",null,nodo,"error");
+            }
+      });
+      }    
+function saveok(){//交卷成功后跳转
+      window.location.href="${ctxPath}/";
+} 
+function loadChk() {//打开考试页面后，加载试题，生成试题版块、答题卡、恢复答题状态
+      $.ajax({
+            type : "post",
+            dataType : "json",
+            url : "${ctxPath}/score/listChk?ids=${mypkao.chkid}&km=${mypkao.kemu}",
+            async : true,//
+            success : function(data, textStatus) {
+                  if (data != null) {//
+                        chkNum = data.total;//题量
+                        var tx="",tx2="",tx_css="ixon_box1";
+                        var tag_type;
+                        var bigtinum=0;
+                        var ti1=null;
+                        var ticard="";
+                        var nav_list="";
+                        u_da=store.get(uid+"uda")||{};
+                        didNum=0;
+                        for (var i=1;i<=chkNum;i++) {//1始，方便
+                               ti1=data.rows[i-1];//每一题
+                               ti_id[i] = ti1;
+                               if(!u_da[i]) u_da[i]="";
+                               if(ti1.qtcode!=tx){//题型
+                                     bigtinum++;
+                               }
+                               if(u_da[i]=="")//无答
+                                     ticard+='<a href="#" id="btn'+i+'" class="easyui-linkbutton c2" style="width:32px;margin: 1px;" onClick="ck('+i+')">'+i+'</a>';
+                               else//恢复考生的已作答,选中状态
+                               {
+                                     ticard+='<a href="#" id="btn'+i+'" class="easyui-linkbutton c1" style="width:32px;margin: 1px;" onClick="ck('+i+')">'+i+'</a>';
+                                     didNum++;
+                               }                                         
+                        }
+                        $('#d-ticardi').panel({content:ticard});
+                        nodoNum=chkNum-didNum;
+                        $('#d-ticardi').panel('setTitle',"答题卡：已做"+didNum+"题/"+nodoNum+"题未做");
+                        currentti=1;
+                        oldti=0;
+                        ck(1);//加载第1题
+                        store.set(uid+"uda",u_da);
+                  }else alert("试题加载错误?!");
+            },
+            error : function(XMLHttpRequest, textStatus, errorThrown) {
+                  alert("试题加载错误?!");
+            }
+      });
+}
+function saveOldti(){//上一题保存答案
+      if(oldti>0){
+            var curAnswer = "";
+            if ($("input[name='input_" + oldti + "']").length > 0) {
+              $("input[name='input_" + oldti + "']").each(function (index, item) {
+                  if (item.checked) {
+                      curAnswer += item.value;//如果多选，连接选项答案
+                  }
+              });
+          }
+            u_da[oldti]=curAnswer;
+            store.set(uid+"uda",u_da);//及时缓存答案
+            if($('#btn'+oldti).attr('class').indexOf("c1")>=0);//return;//已选，不修改
+            else if(curAnswer.length>0){//第1次作答此题
+                $('#btn'+oldti).removeClass('c2').addClass('c1');// 变更答题卡颜色
+                  didNum++;
+                  nodoNum=chkNum-didNum;
+                  $('#d-ticardi').panel('setTitle',"答题卡：已做"+didNum+"题/"+nodoNum+"题未做");
+            }
+      }
+}
+function ck(id){//切换题目
+      //css：c2未答题，c1已答题，c7选中
+      saveOldti();//保存前一题答案
+      //切换到当前题
+      currentti=id;
+      //store.get(uid+"uda");
+      $('#d-ticardi').find('a.c7').removeClass('c7');//移除原来选中的css
+      $('#btn'+id).addClass('c7');//为当前题添加选中的css
+      ti1=ti_id[id];
+      tx=ti1.qtcode;
+      tx2=questype[parseInt(tx)];
+      tag_type=tagtype[parseInt(tx)];     
+      var str = "<div id='ExamArea'>";
+    str+="<h3 id='h3_"+id+"'>("+tx2+") "+id+"、"+ti1.qname+"</h3>";
+    str+="<div class='fcc'><ul>";
+    str += "<li name='li_" + id + "'><label><input type='"+tag_type+"' name='input_" + id + "' value='A' />" +  ti1.ansa + "</label></li>";
+    str += "<li name='li_" + id + "'><label><input type='"+tag_type+"' name='input_" + id + "' value='B' />" +  ti1.ansb + "</label></li>";
+    if((ti1.ansc).trim()!="")
+      str += "<li name='li_" + id + "'><label><input type='"+tag_type+"' name='input_" + id + "' value='C' />" +  ti1.ansc + "</label></li>";
+    if((ti1.ansd).trim()!="")
+      str += "<li name='li_" + id + "'><label><input type='"+tag_type+"' name='input_" + id + "' value='D' />" +  ti1.ansd + "</label></li>";
+str+="</ul></div></div>";
+$("#div_main_content").empty();
+$("#div_main_content").append(str);
+if (u_da[id] != "") {//考生有作答
+    $("li[name='li_" + id + "']").each(function (li_ind, li_domE) {
+        var cur_input=li_domE.getElementsByTagName("input")[0];// 获取li子集input控件
+        if (u_da[id].indexOf(cur_input.value)>=0) {//可能是多选，所以是包含关系
+            cur_input.checked='checked';
+            li_domE.style.color = "#00ff00";// 变更已选择的选项颜色#2EB6A8
+        }
+        else {
+            li_domE.style.color = "";
+        }
+    });   
+    $("#h3_" + id).css('color', '#2EB6A8');// 变更题目颜色 
+}
+oldti=id; 
+}
+function preti(){//点击“上一题”
+      if(currentti==1)return;
+      currentti=currentti-1;
+      ck(currentti);
+}
+function nextti(){//点击“下一题”
+      if(currentti==chkNum)return;
+      currentti=currentti+1;
+      ck(currentti);
+}
+$(function(){
+      __Timer = new _timer('#kstimer', {
+            timerType : '-',
+            count : atime,
+            maxCount :atime ,
+            outputObj : $('#kstimer')[0]
+      }, function() {//考试时间到
+            var html0="考试时间到，“确定”后系统为您交卷！";
+            dowhat1=1;
+            dlg_ok(300,120,"考试在线提醒",html0,dowhat,"warning"); 
+      });
+      __Timer.start();//启动倒计时
+      loadChk();//加载题目
+      $("#div_main_content").on("click","li",function(){
+            $(this).find("input")[0].checked="checked";
+      });
+      //禁用复制
+      if(document.all){
+          document.onselectstart= function(){return false;}; //for ie
+      }else{
+          document.onmousedown= function(){return false;};
+          document.onmouseup= function(){return true;};
+      }
+      document.onselectstart = new Function('event.returnValue=false;');
+      $(document).keydown(function(event){
+            event.keyCode=0;
+          event.returnValue=false;
+          return false;
+      });
+      //禁止右键弹出菜单
+      document.oncontextmenu=function(){ return false;}
+});
+</script>
+</body>
+
+</html>
